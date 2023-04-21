@@ -12,7 +12,7 @@ fi
 
 
 #transfer source file with scp command to project directory (on local machine /usr/cassie/semester-project/
-#the command without variables: scp cleder@class-svr:/home/shared/MOCK_MIX_v2.1.csv.bz2 ./
+#the command with default variables: scp cleder@class-svr:/home/shared/MOCK_MIX_v2.1.csv.bz2 ./
 printf "\nRetrieving file now...\n"
 ./retrievefile.sh $1 $2 $3
 
@@ -22,11 +22,19 @@ else
 	printf "\nFile retrieved successfully\n"
 fi
 
+#find the filename
+filename=$(awk -f findname.awk $3)
+
 #unzip transaction file
-bunzip2 $3
+bunzip2 ./$filename
+
 #remove header record from the transaction file
+tail -n +2 $filename > temp.txt
+cat temp.txt > $filename
 
 #convert all the text in transaction file to lower case
+tr 'A-Z' 'a-z' < $filename > temp.txt
+cat temp.txt > $filename
 
 #convert gender fields to all "f", "m", and "u"
 
