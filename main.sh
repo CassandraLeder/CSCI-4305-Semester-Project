@@ -4,37 +4,47 @@
 #19/4/23
 #KEY: $1: remote-server, $2: remote-userid, $3: remote-file, $4: mysql-user-id, $5 mysql-database
 
-if [[ $# != 5 ]]; then
-	printf "\nCorrect usage is: ./main.sh remote-server remote-userid, remote-file, mysql-user-id, mysql-database\n"
-	exit 1
-fi
+$GARBAGE=$(mktemp -t tmp.XXXXXXXXXX)
 
+#in tandem with the ./checkvalidity script, this function outputs a message for debugging and user purposes. args are $1: test command $2: message
+printCommandException () {
+	if [[ $1  == false ]]; then
+		printf "\n%s was successful\n", $2
+	else
+		>&2 printf "\n%s failed\n", $2
+	fi
+}
+
+function garbageCollector () {
+	printf "\n Please hold while temporary files are being removed\n"
+	printCommandException ./checkvalidity "rm -rf $GARBAGE", "Garbage removal"
+}
+
+if [[ $# != 5 ]]; then
+       >&2  printf "\nCorrect usage is: ./main.sh remote-server remote-userid, remote-file, mysql-user-id, mysql-database\n"
+        exit 1
+fi
 
 
 #transfer source file with scp command to project directory (on local machine /usr/cassie/semester-project/
 #the command with default variables: scp cleder@class-svr:/home/shared/MOCK_MIX_v2.1.csv.bz2 ./
 printf "\nRetrieving file now...\n"
-./retrievefile.sh $1 $2 $3
-
-if [[ $? == 1 ]]; then
-	printf "\nOh no! file was unable to be retrieved! Make sure your information is correct\n"
-else
-	printf "\nFile retrieved successfully\n"
-fi
+printCommandException ./checkvalidity "./retrievefile.sh" $1 $2 $3, "File retrieval " 
 
 #find the filename
 filename=$(awk -f findname.awk $3)
 
 #unzip transaction file
-bunzip2 ./$filename
+bunzip2 $filename
 
 #remove header record from the transaction file
-tail -n +2 $filename > temp.txt
-cat temp.txt > $filename
+tail -n +2 $filename > tmp.txt
+cat tmp.txt > $filename
+mv tmp.txt $GARBAGE/
 
 #convert all the text in transaction file to lower case
-tr 'A-Z' 'a-z' < $filename > temp.txt
-cat temp.txt > $filename
+tr 'A-Z' 'a-z' < $filename > tmp.txt
+cat tmp.txt > $filename
 
 #convert gender fields to all "f", "m", and "u"
 

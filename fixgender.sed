@@ -1,16 +1,14 @@
 #!/bin/sed
 
 #change 1 to f
-5 c\
 #1 to f
-1\f 
+5 s/1/f/
 #0 to m
-0\m
+5 s/0/m/
 #male to m
-male\m
+5 s/male/m/
 
 #female to f
-female\f
+5 s/female/f/
 
 #else is u
-\u
