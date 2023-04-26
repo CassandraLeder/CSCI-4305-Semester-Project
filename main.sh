@@ -50,30 +50,38 @@ filename=$(awk -f findname.awk $GARBAGE)
 string="File name retrieval"
 printCommandException "\${string}"
 
-#unzip transaction file
-bunzip2 $filename
 
-string="unzipping..."
+string="unzipping"
+
+#unzip transaction file
+bunzip2 -f $filename
+
 printCommandException "\${string}"
+
+#now we need to remove the .bz2 from the file name
+echo $filename > $GARBAGE
+filename=$(sed 's/.bz2//' $GARBAGE)
 
 #remove header record from the transaction file
 tail -n +2 $filename > $GARBAGE
 
 string="Remove header from transaction file"
-printCommandException $string
+printCommandException "\${string}"
 
 cat $GARBAGE > $filename
 
 #convert all the text in transaction file to lower case
 tr 'A-Z' 'a-z' < $filename > $GARBAGE
 
-string="Text conversion to lower case....."
-printCommandException $string
+string="Text conversion to lower case "
+printCommandException "\${string}"
 
 cat $GARBAGE  > $filename
 
 #convert gender fields to all "f", "m", and "u"
-#sed -f fixgender.sed $filename
+sed -i 's/[Mm]ale/m/g' $filename
+sed -i 's/\b[Ff]emale\b/f/g' $filename
+awk 'BEGIN { FS="," } { if ($5 !~ /[mf]/) { text=$5; sed -i "s/text/u/g" FILENAME  }}' $filename
 
 #filter out all the records from the transcation file from "state"field that do not have a state or contain "NA". Remove them from original and quarentine them in exceptions.csv
 
