@@ -19,6 +19,7 @@ printCommandException () {
 	fi
 }
 
+#erases the created temp file
 garbageCollector () {
 	printf "\n Please hold while temporary files are being removed\n"
 	rm -rf $GARBAGE
@@ -38,16 +39,17 @@ fi
 #transfer source file with scp command to project directory (on local machine /usr/cassie/semester-project/
 #the command with default variables: scp cleder@class-svr:/home/shared/MOCK_MIX_v2.1.csv.bz2 ./
 printf "\nRetrieving file now...\n"
-./retrievefile.sh $1 $2 $3
 
 string="File retrieval"
+./retrievefile.sh $1 $2 $3
 printCommandException "\${string}"
 
 #find the filename
 echo $3 > $GARBAGE
-filename=$(awk -f findname.awk $GARBAGE)
 
-string="File name retrieval"
+string="Find file name"
+
+filename=$(awk -f findname.awk $GARBAGE)
 printCommandException "\${string}"
 
 
@@ -60,12 +62,13 @@ printCommandException "\${string}"
 
 #now we need to remove the .bz2 from the file name
 echo $filename > $GARBAGE
-filename=$(sed 's/.bz2//' $GARBAGE)
+filename=$(sed 's/.bz2//' $GARBAGE) 
+
+#if this fails, printcommandexception should have exited 0 after first filename
 
 #remove header record from the transaction file
-tail -n +2 $filename > $GARBAGE
-
 string="Remove header from transaction file"
+tail -n +2 $filename > $GARBAGE
 printCommandException "\${string}"
 
 cat $GARBAGE > $filename
@@ -83,7 +86,7 @@ sed -i 's/[Mm]ale/m/g' $filename
 sed -i 's/\b[Ff]emale\b/f/g' $filename
 awk 'BEGIN { FS="," } { if ($5 !~ /[mf]/) { text=$5; sed -i "s/text/u/g" FILENAME  }}' $filename
 
-#filter out all the records from the transcation file from "state"field that do not have a state or contain "NA". Remove them from original and quarentine them in exceptions.csv
+#filter out all the records from the transcation file from "state" field that do not have a state or contain "NA". Remove them from original and quarentine them in exceptions.csv
 
 #Remove the $ sign in the transaction file from the "purchase_amt" field
 
