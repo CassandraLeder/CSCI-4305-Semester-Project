@@ -7,14 +7,26 @@
 GARBAGE=$(mktemp -t tmp.XXXXXXXXXX)
 string="" #this string will be used in tandem with printCommandException function
 
+# if file does not exist
+if test -f "$1"; then
+    : # no op
+else
+    >&2 printf "\nMust be a file\n"
+    exit 1
+fi
+
+#Make sure there are enough args
+if [[ $# != 5 ]]; then
+       >&2  printf "\nCorrect usage is: ./main.sh remote-server remote-userid, remote-file, mysql-user-id, mysql-database\n"
+        exit 1
+fi
+
 #This function lets the end user know whether the last command executed correctly. $1 is the message to be displayed
 printCommandException () {
-	eval string="$1"
-
-	if [[ $? == 0 ]]; then
-		printf "${string}  was successful\n"
-		return 0
-	else
+    eval testing=$1
+	if $testing; then
+		printf "${string} was successful\n"
+	else 
 		>&2 printf "\n%s failed\n", $1; exit 1
 	fi
 }
@@ -29,68 +41,48 @@ garbageCollector () {
 	fi
 }
 
-#Make sure there are enough args
-if [[ $# != 5 ]]; then
-       >&2  printf "\nCorrect usage is: ./main.sh remote-server remote-userid, remote-file, mysql-user-id, mysql-database\n"
-        exit 1
-fi
-
-
 #transfer source file with scp command to project directory (on local machine /usr/cassie/semester-project/
 #the command with default variables: scp cleder@class-svr:/home/shared/MOCK_MIX_v2.1.csv.bz2 ./
 printf "\nRetrieving file now...\n"
 
-string="File retrieval"
 ./retrievefile.sh $1 $2 $3
-printCommandException "\${string}"
 
 #find the filename
 echo $3 > $GARBAGE
 
-string="Find file name"
-
 filename=$(awk -f findname.awk $GARBAGE)
-printCommandException "\${string}"
-
-
-string="unzipping"
 
 #unzip transaction file
 bunzip2 -f $filename
-
-printCommandException "\${string}"
 
 #now we need to remove the .bz2 from the file name
 echo $filename > $GARBAGE
 filename=$(sed 's/.bz2//' $GARBAGE) 
 
-#if this fails, printcommandexception should have exited 0 after first filename
-
 #remove header record from the transaction file
-string="Remove header from transaction file"
 tail -n +2 $filename > $GARBAGE
-printCommandException "\${string}"
 
 cat $GARBAGE > $filename
 
 #convert all the text in transaction file to lower case
 tr 'A-Z' 'a-z' < $filename > $GARBAGE
 
-string="Text conversion to lower case "
-printCommandException "\${string}"
-
 cat $GARBAGE  > $filename
 
 #convert gender fields to all "f", "m", and "u"
 sed -i 's/[Mm]ale/m/g' $filename
-sed -i 's/\b[Ff]emale\b/f/g' $filename
-awk 'BEGIN { FS="," } { if ($5 !~ /[mf]/) { text=$5; sed -i "s/text/u/g" FILENAME  }}' $filename
+sed -i 's/[Ff]emale/f/g' $filename #problem w this line..
+sed -i 's/0\/m/g'
+sed -i 's/1\/f/g'
 
 #filter out all the records from the transcation file from "state" field that do not have a state or contain "NA". Remove them from original and quarentine them in exceptions.csv
+./filterstates.sh $filename
 
 #Remove the $ sign in the transaction file from the "purchase_amt" field
+./removedollarsign.sh $filename
 
 #sort transaction file by customerID. format shouldn't change. final transaction file should be called transaction.csv
+sort -k 1,1 $filename
 
 #generate a summary file using transaction.csv. look at .pdf for pertitent details
 

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+./main.sh 40.69.135.45 cleder /home/shared/MOCK_MIX_v2.1.csv.bz2 cleder 40.69.135.45 
