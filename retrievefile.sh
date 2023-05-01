@@ -18,7 +18,7 @@ else
         printf "\nFile retrieval succeeded\n"
         exit 0
     else
-        >&2 printf "\nFailure"
+        >&2 printf "\nFailure to retrieve file\n"
         exit 1
     fi
 fi
