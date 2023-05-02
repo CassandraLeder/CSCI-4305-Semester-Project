@@ -1,3 +1,4 @@
 	Notice: included in the semester project directory are the .pdf files included in the blackboard assignment. This is because I used the X11 based Zathura utility to view the documents as I was writing the scripts. The files themselves will not be used or modified in any way by my scripts.
 
 	My main script (main.sh) accepts the default parameters detailed in the main semester project document--arg1 is remote-server, arg2 is remote-userid, arg3 is remote-file, arg4 is mysql-user-id, and arg5 is mysql-database. By providing these arguments, you should be able to sit back and relax while the script handles all the heavy lifting. Note: I did try running my script from another script to see if your experience would be hindered in any sort of way.
+    I had problems with the purchase / transaction report. my bad.

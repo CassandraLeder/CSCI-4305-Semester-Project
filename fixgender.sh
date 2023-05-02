@@ -15,6 +15,7 @@ sed -i 's/fem/f/g' $1
 sed -i 's/,0/,m/g' $1
 #1 to f
 sed -i 's/,1/,f/g' $1
+sed -i 's/,,[,]/,//g' $1
 
 #if not m or f, replace with u
 gawk -i inplace 'BEGIN { FS="," } { if (($5 !~ /m/) || ($5 !~ /f/)) { string=$5; sub($string, "u", $12) } } {print}' $1

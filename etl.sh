@@ -141,6 +141,8 @@ fi
 
 
 #generate a summary file using transaction.csv. look at .pdf for pertitent details
+./customerid.sh $1
+
 
 
 #take out trash
