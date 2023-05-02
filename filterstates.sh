@@ -7,7 +7,7 @@ if [[ $# != 1 ]]; then
 fi
 
 #if not in states list, add it to exceptions
-awk 'BEGIN { FS="," } { print $12 }' $1 | grep -v "$(cat states.txt)" >> exceptions.csv
+awk 'BEGIN { FS="," } { print $12 }' $1 | grep "$(cat states.txt)" >> exceptions.csv
 
 #remove all lines with NAs
 sed -i '/,NA,/d' $1
