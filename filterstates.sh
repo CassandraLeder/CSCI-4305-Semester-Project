@@ -1,5 +1,5 @@
 #!/bin/bash
-#this script runs an awk command that finds and removes any fields that are "not a state" ie has a length greater than 2 or not in state text file
+#this script runs an awk command that finds and removes any fields that are "not a state" ie not in state text file
 
 if [[ $# != 1 ]]; then 
     >&2 printf "\nUsage: filename\n"
@@ -14,9 +14,6 @@ sed -i '/,NA,/d' $1
 
 #remove lines not in states list
 sed -i '/[^]]$(cat states.txt)/d' $1
-
-#remove lines with blanks
-sed -i '/,,[,]/d' $1
 
 # given file exists
 if test -f exceptions.csv; then

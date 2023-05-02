@@ -6,7 +6,7 @@ if [[ $# != 1 ]]; then
     exit 1
 fi
 
-gawk -i inplace 'BEGIN { FS="," } {gsub(/,\$/, ",", $6)}' $1
+ sed -i 's/\$//g' $1
 
 if [[ $? == 0 ]]; then
     printf "\n\$s removed from file\n"

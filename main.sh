@@ -44,7 +44,7 @@ printf "\nRetrieving file now...\n"
 
 #if command worked do nothing, else exit
 if ./retrievefile.sh $1 $2 $3; then
-        :
+        printf "\nFile successfully retrived by SCP\n"
 else
         exit 1
 fi
@@ -56,7 +56,7 @@ filename=$(awk -f findname.awk $GARBAGE)
 
 # I tried to write a function for this, but it didn't work as intended :-(
 if [[ $? == 0 ]]; then
-    printf "\n%s%s\n", "Success! file name found: ", $filename
+    printf "\nSuccess file name found: $filename\n"
 else
     >&2 printf "\nError! File name not found\n"
     exit 1
@@ -77,7 +77,7 @@ echo $filename > $GARBAGE
 filename=$(sed 's/.bz2//' $GARBAGE) 
 
 if [[ $? == 0 ]]; then
-    printf "\n%s%s\n", "New file name found: ", $filename
+    printf "\nNew file name found: $filename\n"
 else 
     >&2 printf "\nError! new file name not found."
     exit 1
@@ -88,50 +88,52 @@ tail -n +2 $filename > $GARBAGE
 
 if [[ $? == 0 ]]; then
     printf "\nNice! header removed from file.\n"
+    cat $GARBAGE > $filename
 else
     >&2 printf "\nHeader failed to be removed\n"
     exit 1
 fi
-
-cat $GARBAGE > $filename
 
 #convert all the text in transaction file to lower case
 tr 'A-Z' 'a-z' < $filename > $GARBAGE
 
 if [[ $? == 0 ]]; then
     printf "\nText has succesfully been converted to lower case\n"
+    cat $GARBAGE > $filename
 else
     >&2 printf "\nError! text couldn't be converted to lower case\n"
     exit 1
 fi
 
-cat $GARBAGE > $filename
-
 #convert gender fields to all "f", "m", and "u"
 #error finding built-in to script files
 if ./fixgender.sh $filename; then
-    :
+    printf "\nSuccessfully normalized gender field\n"
 else
+    >&2 printf "\nFailed to normalize gender field\n"
     exit 1
 fi
 
 #filter out all the records from the transcation file from "state" field that do not have a state or contain "NA". Remove them from original and quarentine them in exceptions.csv
 if ./filterstates.sh $filename; then
-    :
+    printf "\nSuccessfully normalized state field and created exceptions.csv\n"
 else
+    >&2 printf "\nFailed to normalize state field\n"
     exit 1
 fi
 
 #Remove the $ sign in the transaction file from the "purchase_amt" field
 if ./removedollar.sh $filename; then
-    :
+    printf "\nSuccessfully removed dollar signs from purchase amount field\n"
 else
+    >&2 printf "\nFailed to remove dollar signs from purchase amount field\n"
     exit 1
 fi
 
 #sort transaction file by customerID. format shouldn't change. final transaction file should be called transaction.csv
-if sort -k 1,1 $filename; then
+if sort -t, -k 1,1 $filename > $GARBAGE; then
     printf "\nTransaction file sort successful\n"
+    cat $GARBAGE > transaction.csv
 else
     >&2 printf "\nTransaction file sort failed\n"
     exit 1
